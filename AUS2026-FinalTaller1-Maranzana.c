@@ -33,7 +33,7 @@ typedef struct {
 void configuracion(int tablero[][DIMENSION_MAXIMA], int  dimension);
 void mostrarTablero(int tablero[][DIMENSION_MAXIMA], int dimension);
 void presionarCelda(int tablero[][DIMENSION_MAXIMA], int fila, int columna, int dimension);
-void cambiarLuz(int tablero[][DIMENSION_MAXIMA], int fila, int columna, int dimension);
+void alternarLuz(int tablero[][DIMENSION_MAXIMA], int fila, int columna, int dimension);
 int victoria(int tablero [][DIMENSION_MAXIMA], int dimension);
 void mostrarEstadisticas(Estadisticas estadisticas[]);
 void iniciarEstadisticas(Estadisticas estadisticas[]);
@@ -111,6 +111,18 @@ int main (){
 
 //Funciones
 
+//Inicializamos las estadisticas en 0
+void iniciarEstadisticas(Estadisticas estadisticas[]){
+    for(int i=0; i < 3; i++){
+        estadisticas[i].ganadas = 0;
+        estadisticas[i].perdidas = 0;
+        estadisticas[i].jugadas = 0;
+        estadisticas[i].abandonadas = 0;
+        estadisticas[i].interaccionesTotales = 0;
+    }
+}
+
+
 //Seteamos la configuración de la partida
 void configuracion(int tablero[][DIMENSION_MAXIMA], int dimension){
     char opcion;
@@ -118,13 +130,13 @@ void configuracion(int tablero[][DIMENSION_MAXIMA], int dimension){
 
     //Definimos las 3 configuraciones posibles para la partida:
     //Posibles configuraciones 3X3
-    int configuracion3A[2][2] = {{1,0,1}, {0,1,0}, {1,0,1}};
-    int configuracion3B[2][2] = {{0,1,0}, {1,1,1}, {0,1,0}};
-    int configuracion3C[2][2] = {{1,1,0}, {0,1,0}, {0,1,1}};
+    int configuracion3A[3][3] = {{1,0,1}, {0,1,0}, {1,0,1}};
+    int configuracion3B[3][3] = {{0,1,0}, {1,1,1}, {0,1,0}};
+    int configuracion3C[3][3] = {{1,1,0}, {0,1,0}, {0,1,1}};
 
     //Posibles configuraciones 4x4
-    int configuracion4A[3][3] = {{1,0,1,0}, {0,1,0,1}, {1,0,1,0}, {0,1,0,1}};
-    int configuracion4B[3][3]= {{0,1,1,0}, {1,0,0,1}, {1,0,0,1}, {0,1,1,0}};
+    int configuracion4A[4][4] = {{1,0,1,0}, {0,1,0,1}, {1,0,1,0}, {0,1,0,1}};
+    int configuracion4B[4][4]= {{0,1,1,0}, {1,0,0,1}, {1,0,0,1}, {0,1,1,0}};
 
     //Posibles configuraciones 5x5
     int configuracion5A[5][5] = {{1,1,0,0,0}, {1,1,1,0,0}, {0,1,1,1,0}, {0,0,1,1,1}, {0,0,0,1,1}};
@@ -144,7 +156,7 @@ void configuracion(int tablero[][DIMENSION_MAXIMA], int dimension){
                 }else{
                     tablero[i][j] = configuracion3C[i][j];
                 }
-            }else if(dimension ==4){
+            }else if(dimension == 4){
                 if(opcion == 'A' || opcion == 'a'){
                     tablero[i][j] = configuracion4A[i][j];
                 }else{
@@ -152,7 +164,7 @@ void configuracion(int tablero[][DIMENSION_MAXIMA], int dimension){
                 }
 
             }else {
-                if(opcion == 'A' || opcion == "a"){
+                if(opcion == 'A' || opcion == 'a'){
                     tablero[i][j] = configuracion5A[i][j];
                 }else{
                     tablero[i][j] = configuracion5A[i][j];
@@ -177,16 +189,51 @@ void mostrarTablero (int tablero[][DIMENSION_MAXIMA], int dimension){
         printf("%d |", i);
         for (int j = 0; j < dimension; j++){
             // ● para endcendido (1) ○ para apagado (0)
-            printf("%s ", (tablero[i][j] == ENCENDIDO?  "●" : "○"); 
+            printf("%s ", (tablero[i][j] == ENCENDIDO?  "●" : "○")); 
         }
         printf("\n");
     }
 }
 
 void presionarCelda(int tablero [][DIMENSION_MAXIMA], int fila, int columna, int dimension){
-    cambiarLuz(tablero, fila, columna, dimension);
-    cambiarLuz(tablero, fila-1, columna, dimension);
-    cambiarLuz(tablero, fila+1, columna, dimension);
-    cambiarLuz(tablero, fila, columna-1, dimension);
-    cambiarLuz(tablero, fila, columna+1, dimension);
+    alternarLuz(tablero, fila, columna, dimension);
+    alternarLuz(tablero, fila-1, columna, dimension);
+    alternarLuz(tablero, fila+1, columna, dimension);
+    alternarLuz(tablero, fila, columna-1, dimension);
+    alternarLuz(tablero, fila, columna+1, dimension);
 }
+
+
+void alternarLuz (int tablero[][DIMENSION_MAXIMA], int fila, int columna, int dimension){
+    if(fila >= 0 && fila <= dimension && columna >= 0 && columna <= dimension){
+        tablero[fila][columna] = !tablero [fila][columna];
+    }
+}
+
+
+
+int victoria (int tablero [][DIMENSION_MAXIMA], int dimension){
+    //Verificamos que todas las celdas esten encendidas
+    for(int i = 0; i<dimension; i++){
+        for (int j = 0; i < dimension; i++){
+            if(tablero[i][j] == ENCENDIDO) return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+void mostrarEstadisticas( Estadisticas estadisticas[]){
+    printf("\nFIN DEL JUEGO");
+    
+    for(int i=0; i<3; i++){
+        int dimension = i+3;
+        printf("\nPartidas en %dx%d - %d Gandas vs %d Perdidas - %d Jugadas - %d Interacciones Totales",
+        dimension, dimension, estadisticas[i].ganadas, estadisticas[i].perdidas, estadisticas[i].jugadas, estadisticas[i].interaccionesTotales);
+        
+        if(estadisticas[i].abandonadas > 0){
+            printf("\nAbandonadas: %d", estadisticas[i].abandonadas);
+        }
+    }
+    printf("\n");
+}
+
