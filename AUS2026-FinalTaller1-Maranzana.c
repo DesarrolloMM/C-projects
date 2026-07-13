@@ -1,8 +1,13 @@
+#pragma region Dependencias
+
 //Inclusion de bibliotecas
 #include <stdio.h>
 #include <stdlib.h>
+#include <gtk/gtk.h>
 
+#pragma endregion
 
+#pragma region Macros
 //Declaracion de macros
 //Dimension maxima de la matriz
 #define DIMENSION_MAXIMA 5
@@ -18,8 +23,10 @@
 #define MOVIMIENTOS_MAXIMOS_4 30
 #define MOVIMIENTOS_MAXIMOS_5 45
 
-//Estructuras para la estadisticas
+#pragma endregion
 
+
+//Estructuras para la estadisticas
 typedef struct {
     int jugadas;
     int ganadas;
@@ -28,8 +35,23 @@ typedef struct {
     int interaccionesTotales;
 } Estadisticas;
 
+#pragma region Interfaz gráfica
+//Estructura para la interfáz gráfica
+typedef struct 
+{
+    int fila;
+    int columna;
+    int dimension;
+}Celda;
 
-//Prototipos de funcion
+//Variables globales para la interfáz gráfica
+GtkWidget *botones[DIMENSION_MAXIMA][DIMENSION_MAXIMA];
+int tableroLogico[DIMENSION_MAXIMA][DIMENSION_MAXIMA]
+
+#pragma endregion
+
+#pragma Prototipos de funcion
+
 void configuracion(int tablero[][DIMENSION_MAXIMA], int  dimension);
 void mostrarTablero(int tablero[][DIMENSION_MAXIMA], int dimension);
 void presionarCelda(int tablero[][DIMENSION_MAXIMA], int fila, int columna, int dimension);
@@ -38,6 +60,7 @@ int victoria(int tablero [][DIMENSION_MAXIMA], int dimension);
 void mostrarEstadisticas(Estadisticas estadisticas[]);
 void iniciarEstadisticas(Estadisticas estadisticas[]);
 
+#pragma endregion
 
 //Funcion principal
 int main (){
@@ -53,7 +76,7 @@ int main (){
 
     do{
         //menú
-        printf("\n1. Jugar 3x3 \n2 Jugar 4x4\n3 Jugar 5x5 \n0. Salir");
+        printf("\n1. Jugar 3x3 \n2. Jugar 4x4\n3. Jugar 5x5 \n0. Salir");
         printf("\n Elija una opción: ");
         scanf("%d", &opcion);
 
@@ -68,22 +91,52 @@ int main (){
             int partidaAbandonada = FALSE;
 
             configuracion (tablero, dimension);
+            
+            //Creamos la ventana grafica
+            GtkWidget *ventqana, *grilla;
+            gtk_init (&argc, &argv);
+            ventana = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+            gtk_window_set_title(GTK_WINDOW(ventana), "Luces Fuera!");
+            grilla = gtk_grid_new();
+            gtk_container_add(GTK_CONTAINER(ventana), grilla);
+            for (int i = 0; i < dimension; i++)
+            {
+                for (int j = 0; j < dimension; i++)
+                {
+                    Celda *info = malloc(sizeof(Celda));
+                    info->fila = i; info->columna = j; info->dimension = dimension;
+                    matriz_botones[i][j] = gtk_button_new();
+
+                    //Capturamos el clic
+                    g_signal_connect(matriz_botones[i][j], "clicked", G_CALLBACK(botonPresionado), info);
+                    //Colocamos en la grilla visual
+                    gtk_grid_attach(GTK_GRID(grilla), matriz_botones[i][j], j,i,1,1);
+                }                
+            }
+
+            //Actualizamos la ventana
+            actualizarInterfaz(dimension);
+            gtk_widget_show_all(ventana);
+            //Cedemos el control a la interfaz gráfica
+            gtk_main()
+
             //Restamos 1 porque el índice inicia en 0
             estadisticas[opcion - 1].jugadas++;
 
             while (movimientosRealizados < movimientoMaximo && !ganador && !partidaAbandonada){
-                int respuesta, c;
+                int fila, columna;
                 mostrarTablero(tablero, dimension);
-                printf("\n Movimientos: %d%d", movimientosRealizados,movimientoMaximo);
-                printf("\n Ingrese fila y columna (0 a %d) o + -1 para salir", dimension-1);
-                scanf("%d",&respuesta);
-                    if (respuesta == -1){
+                printf("\n Movimientos: %d/%d", movimientosRealizados,movimientoMaximo);
+                printf("\n Ingrese la fila y luego la columna (0 a %d) o + -1 para salir\n", dimension-1);
+                scanf("%d",&fila);
+                    if (fila == -1){
                         partidaAbandonada = TRUE;
                         break;
                     }
-                scanf("%d", &c);
+                scanf("%d", &columna);
 
-                if(respuesta >= 0 && respuesta < dimension && c >= 0 && c < dimension){
+                if(fila >= 0 && fila < dimension && columna >= 0 && columna < dimension){            
+                    presionarCelda(tablero,fila,columna,dimension);
                     movimientosRealizados++;
                     estadisticas[opcion - 1].interaccionesTotales++;
                     ganador = victoria(tablero, dimension);
@@ -109,7 +162,7 @@ int main (){
 }
 
 
-//Funciones
+#pragma region Funciones
 
 //Inicializamos las estadisticas en 0
 void iniciarEstadisticas(Estadisticas estadisticas[]){
@@ -181,7 +234,7 @@ void configuracion(int tablero[][DIMENSION_MAXIMA], int dimension){
 void mostrarTablero (int tablero[][DIMENSION_MAXIMA], int dimension){
     int i, j;  
     printf("\n   ");
-    for (i = 0; j< dimension; j++){
+    for (j = 0; j< dimension; j++){
         printf("%d ", j);
     }
     printf("\n");
@@ -205,7 +258,7 @@ void presionarCelda(int tablero [][DIMENSION_MAXIMA], int fila, int columna, int
 
 
 void alternarLuz (int tablero[][DIMENSION_MAXIMA], int fila, int columna, int dimension){
-    if(fila >= 0 && fila <= dimension && columna >= 0 && columna <= dimension){
+    if(fila >= 0 && fila < dimension && columna >= 0 && columna < dimension){
         tablero[fila][columna] = !tablero [fila][columna];
     }
 }
@@ -215,7 +268,7 @@ void alternarLuz (int tablero[][DIMENSION_MAXIMA], int fila, int columna, int di
 int victoria (int tablero [][DIMENSION_MAXIMA], int dimension){
     //Verificamos que todas las celdas esten encendidas
     for(int i = 0; i<dimension; i++){
-        for (int j = 0; i < dimension; i++){
+        for (int j = 0; j < dimension; j++){
             if(tablero[i][j] == ENCENDIDO) return FALSE;
         }
     }
@@ -236,4 +289,32 @@ void mostrarEstadisticas( Estadisticas estadisticas[]){
     }
     printf("\n");
 }
+
+//Funciones para controlar la interfaz gráfica
+void actualizarInterfaz(int dimension){
+    for (int i = 0; i < dimension; i++)
+    {
+        for (int j = 0; j < dimension; j++)
+        {
+            //Sincronizamos el texto delboton con el estado lógico
+            const char *estado = (tableroLogico[i][j] == ENCENDIDO)? ON:OFF;
+            gtk_button_set_label(GTKBUTTON(botones[i][j]), estado);
+        }   
+    }
+}
+
+
+static void botonPresionado(GtkWidget *widget,  gpointer data){
+    
+    Celda *info = (Celda *)data;
+    presionarCelda(tableroLogico, info->fila, info->columna, info->dimension);
+    // Actualizamos los botones visuales
+    actualizarInterfaz(info->dimension);
+    //Verificamos victoria
+    if (victoria(tableroLogico, info->dimension)) {
+        printf("¡Has ganado!\n");
+    }   
+}    
+
+#pragma endregion
 
