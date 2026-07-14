@@ -132,9 +132,12 @@ void configuracion(int tablero[][DIMENSION_MAXIMA], int dimension, char patron){
     //Posibles configuraciones 4x4
     int configuracion4A[4][4] = {{1,0,1,0}, {0,1,0,1}, {1,0,1,0}, {0,1,0,1}};
     int configuracion4B[4][4]= {{0,1,1,0}, {1,0,0,1}, {1,0,0,1}, {0,1,1,0}};
+    int configuracion4C[4][4]= {{1,1,1,0}, {0,1,0,1}, {1,0,1,0}, {0,0,1,1}};
 
     //Posibles configuraciones 5x5
-    int configuracion5A[5][5] = {{1,1,0,0,0}, {1,1,1,0,0}, {0,1,1,1,0}, {0,0,1,1,1}, {0,0,0,1,1}};
+    int configuracion5A[5][5] = {{1,0,1,0,1}, {0,1,0,1,0}, {1,0,1,0,1}, {0,1,0,1,0}, {1,0,1,0,1}};
+    int configuracion5B[5][5] = {{0,0,1,0,0}, {0,1,1,1,0}, {1,1,1,1,1}, {0,1,1,1,0}, {0,0,1,0,0}};
+    int configuracion5C[5][5] = {{1,1,0,0,1}, {0,1,1,0,0}, {1,0,1,0,1}, {0,0,1,1,0}, {1,0,0,1,1}};
 
     for (i = 0; i < dimension; i++)
     {
@@ -151,15 +154,19 @@ void configuracion(int tablero[][DIMENSION_MAXIMA], int dimension, char patron){
             }else if(dimension == 4){
                 if(patron == 'A' || patron == 'a'){
                     tablero[i][j] = configuracion4A[i][j];
-                }else{
+                }else if(patron == 'B' || patron == 'b'){
                     tablero[i][j] = configuracion4B[i][j];
+                }else{
+                    tablero[i][j] = configuracion4C[i][j];
                 }
 
             }else {
                 if(patron == 'A' || patron == 'a'){
                     tablero[i][j] = configuracion5A[i][j];
+                }else if(patron == 'B' || patron == 'b'){
+                    tablero[i][j] = configuracion5B[i][j];
                 }else{
-                    tablero[i][j] = configuracion5A[i][j];
+                    tablero[i][j] = configuracion5C[i][j];
                 }
             }
         
@@ -302,7 +309,7 @@ void popUpConfiguracion(int dimension) {
         GTK_DIALOG_MODAL,
         "A", 1,
         "B", 2,
-        dimension == 5 ? NULL : "C", 3,
+        "C", 3,
         NULL
     );
     
